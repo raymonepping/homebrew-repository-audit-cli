@@ -4,15 +4,22 @@ IFS=$'\n\t'
 
 VERSION="1.1.0"
 SCRIPT_NAME="repository_audit.sh"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB_DIR="$SCRIPT_DIR/../lib"
 
-TEMPLATE_MD="$SCRIPT_DIR/../tpl/audit_report.tpl"
-HEADER_TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_header.tpl"
-FOOTER_TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_footer.tpl"
+# Smart BASE_DIR detection
+if [[ -n "${REPO_AUDIT_HOME:-}" && -d "$REPO_AUDIT_HOME/lib" ]]; then
+  BASE_DIR="$REPO_AUDIT_HOME"
+elif [[ -d "$(dirname "$(dirname "$0")")/lib" ]]; then
+  BASE_DIR="$(dirname "$(dirname "$0")")"
+elif [[ -d "/opt/homebrew/share/repository-audit-cli/lib" ]]; then
+  BASE_DIR="/opt/homebrew/share/repository-audit-cli"
+else
+  BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
+
+LIB_DIR="$BASE_DIR/lib"
+TPL_DIR="$BASE_DIR/tpl"
 
 # Load shared functions
-# shellcheck source=lib/audit_utils.sh
 source "$LIB_DIR/audit_utils.sh"
 
 # Default values
