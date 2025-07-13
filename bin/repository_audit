@@ -124,17 +124,17 @@ case "${FORMAT,,}" in
   markdown | md | default | "" )
     FORMAT="markdown"
     EXT="md"
-    TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_md.tpl"
-    HEADER_TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_header.tpl"
-    FOOTER_TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_footer.tpl"    
+    TEMPLATE="$TPL_DIR/audit_report_md.tpl"
+    HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
+    FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"    
     ;;
   csv )
     EXT="csv"
-    TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_csv.tpl"
+    TEMPLATE="$TPL_DIR/audit_report_csv.tpl"
     ;;
   json )
     EXT="json"
-    TEMPLATE="$SCRIPT_DIR/../tpl/audit_report_json.tpl"
+    TEMPLATE="$TPL_DIR/audit_report_json.tpl"
     ;;
   * )
     echo "❌ Unknown format: $FORMAT"
