@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+# shellcheck disable=SC2034
+VERSION="1.0.7"
+
 IFS=$'\n\t'
 
 # Color codes (unused for now)

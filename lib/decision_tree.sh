@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2034
+VERSION="1.0.7"
+
 run_decision_tree() {
   tput bold; echo "🧠 Welcome to the Repository Audit Wizard"; tput sgr0
 
