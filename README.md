@@ -96,6 +96,8 @@ Born from a real mess of forgotten Git repos, repository_audit was built to make
 
 'Control is clarity. Clarity is confidence.” — repository_audit'
 
+---
+
 © 2025 Raymon Epping
 
 🧠 Powered by repository_audit.sh — 📚 Related Articles
