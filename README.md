@@ -19,6 +19,7 @@
 ```bash
 brew install raymonepping/tap/repository-audit-cli
 repository_audit
+```
 
 ---
 
