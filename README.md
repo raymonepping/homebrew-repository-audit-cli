@@ -24,7 +24,8 @@ repository_audit
 ---
 
 ## 📂 Structure
-<pre> <code>``` 
+
+``` 
 .
 ├── bin/                        # CLI entrypoint (repository_audit)
 ├── lib/                        # Modular logic and audit utils
@@ -34,7 +35,7 @@ repository_audit
 ├── repository_audit_cli.rb     # Homebrew formula
 ├── README.md                   # This file
 └── .brewinfo                   # Optional brew metadata
-```</code> </pre>
+```
 
 ---
 
