@@ -23,7 +23,7 @@ repository_audit
 
 ---
 
-📂 Structure
+## 📂 Structure
 
 .
 ├── bin/                        # CLI entrypoint (repository_audit)
@@ -37,7 +37,8 @@ repository_audit
 
 ---
 
-🔑 Key Features
+## 🔑 Key Features
+
 🧠 Smart decision tree mode (wizard)
 
 📁 Parent mode: audit all repos in a folder
@@ -56,7 +57,7 @@ repository_audit
 
 ---
 
-✨ Example Scenarios
+## ✨ Example Scenarios
 
 # Wizard mode (recommended)
 repository_audit
@@ -72,7 +73,7 @@ repository_audit --parent ./test --dryrun
 
 ---
 
-🚧 Flags Reference
+## 🚧 Flags Reference
 Use --help to view all flags:
 
 repository_audit --help
@@ -83,7 +84,7 @@ export REPOSITORY_AUDIT_HOME=/your/custom/path
 
 --- 
 
-🧠 Philosophy
+## 🧠 Philosophy
 Born from a real mess of forgotten Git repos, repository_audit was built to make sense of chaos — without needing a dashboard, token, or setup. It’s:
 
 🔍 Smart enough to know when a repo is stale
