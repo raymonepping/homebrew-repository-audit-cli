@@ -40,21 +40,14 @@ repository_audit
 
 ## 🔑 Key Features
 
-🧠 Smart decision tree mode (wizard)
-
-📁 Parent mode: audit all repos in a folder
-
-🧒 Child mode: inspect a single repo
-
-📄 Markdown, CSV, and JSON report support
-
-💾 Timestamped report files for tracking
-
-🧾 Optional Markdown summary block
-
-🧩 Fully templated output via tpl/ folder
-
-🍺 Brew-installable and versioned
+- 🧠 Smart decision tree mode (wizard)
+- 👴🏻 Parent mode: audit all repos in a folder
+- 👶🏼 Child mode: inspect a single repo
+- 📄 Markdown, CSV, and JSON report support
+- 💾 Timestamped report files for tracking
+- 🧾 Optional Markdown summary block
+- 🧩 Fully templated output via tpl/ folder
+- 🍺 Brew-installable and versioned
 
 ---
 
@@ -96,7 +89,7 @@ Born from a real mess of forgotten Git repos, repository_audit was built to make
 
 ⚡ Fast enough to feel native
 
-'Control is clarity. Clarity is confidence.” — repository_audit'
+> "Control is clarity. Clarity is confidence." — *repository_audit*
 
 ---
 
