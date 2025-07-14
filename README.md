@@ -102,4 +102,4 @@ Born from a real mess of forgotten Git repos, repository_audit was built to make
 
 🧠 Powered by repository_audit.sh — 📚 Related Articles
 
-📖 [Part From Git Repo Chaos to Clean Insights](https://medium.com/continuous-insights/from-git-repo-chaos-to-clean-insights-repository-audit-aa4c8696794e)  
+📖 [Blog: "From Git Repo Chaos to Clean Insights"](https://medium.com/continuous-insights/from-git-repo-chaos-to-clean-insights-repository-audit-aa4c8696794e)  
