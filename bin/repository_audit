@@ -131,10 +131,14 @@ case "${FORMAT,,}" in
   csv )
     EXT="csv"
     TEMPLATE="$TPL_DIR/audit_report_csv.tpl"
+    HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
+    FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"        
     ;;
   json )
     EXT="json"
     TEMPLATE="$TPL_DIR/audit_report_json.tpl"
+    HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
+    FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"
     ;;
   * )
     echo "❌ Unknown format: $FORMAT"
