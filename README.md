@@ -1,98 +1,102 @@
-# radar_love_cli 🔐
+# repository_audit_cli 🧠
 
-> “Cold and frosty morning. There’s not a lot to say. About the things caught in my mind..” — *Oasis*
+> “You can’t improve what you don’t know you have.” — *Someone wise (probably during a Git cleanup)*
 
-[![brew install](https://img.shields.io/badge/brew--install-success-green?logo=homebrew&style=flat-square)](https://github.com/raymonepping/radar_love_cli)
+[![brew install](https://img.shields.io/badge/brew--install-success-green?logo=homebrew&style=flat-square)](https://github.com/raymonepping/repository_audit_cli)
 [![status](https://img.shields.io/badge/ci-auto--generated-blue?style=flat-square)](./sanity_check_report.md)
-[![badge](https://img.shields.io/badge/radar--ready-yes-critical?logo=githubactions&style=flat-square)](https://www.vaultproject.io/docs/secrets/radar)
+[![badge](https://img.shields.io/badge/git--audit-wizard🧙‍♂️-critical?logo=github&style=flat-square)](https://medium.com/continuous-insights/from-git-repo-chaos-to-clean-insights-repository-audit-aa4c8696794e)
 
 ---
 
 ## 🎯 What Is This?
 
-`radar_love_cli` is a **modular, Homebrew-installable CLI** that lets you simulate realistic code leaks (secrets, PII, etc.) to test secret scanning pipelines with Vault Radar, TruffleHog, Gitleaks, and more.
+`repository_audit_cli` is a **templated, Homebrew-installable Git audit CLI** that scans a single repo or a whole folder of repositories — then exports a Markdown, CSV, or JSON report you’ll actually want to read.
 
 ---
 
 ## 🧰 How to Use
 
 ```bash
-brew install raymonepping/tap/radar_love_cli
-radar_love --create true --build true --commit true --request true
-```
-
-All flags are optional. This CLI wraps and coordinates a set of deeply integrated scripts.
+brew install raymonepping/tap/repository-audit-cli
+repository_audit
 
 ---
 
-## 📂 Structure
+📂 Structure
 
-```
 .
-├── bin/                 # Main CLI symlink (radar_love)
-├── core/                # Modular bash logic
-│   ├── commit_gh.sh     # GitHub commit helper
-│   ├── validate_env.sh  # Dependency checker
-│   └── ...
-├── templates/           # TPL/JSON banners
-├── test/                # (Reserved for testing)
-├── radar_love_cli.rb    # Homebrew formula
-├── README.md            # This file
-└── .brewinfo            # (Optional brew metadata)
-```
+├── bin/                        # CLI entrypoint (repository_audit)
+├── lib/                        # Modular logic and audit utils
+│   ├── decision_tree.sh        # Interactive mode wizard
+│   └── audit_utils.sh          # Git audit logic
+├── tpl/                        # Templates for markdown, csv, json
+├── repository_audit_cli.rb     # Homebrew formula
+├── README.md                   # This file
+└── .brewinfo                   # Optional brew metadata
 
 ---
 
-## 🔑 Key Features
+🔑 Key Features
+🧠 Smart decision tree mode (wizard)
 
-- ✅ One CLI to orchestrate your entire Radar demo  
-- 🧪 Includes leak builders, commit triggers, PR scans  
-- 📎 Built-in GitHub automation (via `gh`)  
-- 🔍 Environment validator with `--validate`  
-- 🧼 CI-ready with `--quiet`, `--debug`, and `--status`  
+📁 Parent mode: audit all repos in a folder
 
----
+🧒 Child mode: inspect a single repo
 
-## ✨ Example Scenarios
+📄 Markdown, CSV, and JSON report support
 
-```bash
-# Minimal demo run with default values
-radar_love
+💾 Timestamped report files for tracking
 
-# Full cycle with debug and fresh rebuild
-radar_love --fresh true --build true --commit true --request true --debug compact
+🧾 Optional Markdown summary block
 
-# Validate dependencies only
-radar_love --validate
-```
+🧩 Fully templated output via tpl/ folder
+
+🍺 Brew-installable and versioned
 
 ---
 
-## 🚧 Flags Reference
+✨ Example Scenarios
 
-All supported flags can be viewed with:
+# Wizard mode (recommended)
+repository_audit
 
-```bash
-radar_love --help
-```
+# Audit single repo with JSON output
+repository_audit --child ./myrepo --format json
 
----
+# Full audit on a folder with summary table
+repository_audit --parent ~/Projects --format markdown --summary
 
-## 🧠 Philosophy
-
-This toolkit was born from a simple need: demo secret-scanning tools in the most realistic way possible — without real leaks, with full automation, and with style.
-
-It grew into a modular, CI-aware CLI that now installs via Homebrew.  
-Because automation should automate itself. 🚀
-
-> “And as the day was dawning. My plane flew away. With all the things caught in my mind..” — *Oasis*
+# Dry run (no file writes)
+repository_audit --parent ./test --dryrun
 
 ---
+
+🚧 Flags Reference
+Use --help to view all flags:
+
+repository_audit --help
+
+You can also set this to override where reports and templates are read from:
+
+export REPOSITORY_AUDIT_HOME=/your/custom/path
+
+--- 
+
+🧠 Philosophy
+Born from a real mess of forgotten Git repos, repository_audit was built to make sense of chaos — without needing a dashboard, token, or setup. It’s:
+
+🔍 Smart enough to know when a repo is stale
+
+🧼 Clean enough to drop into CI/CD
+
+💡 Flexible enough to make it your own (just edit the .tpl files)
+
+⚡ Fast enough to feel native
+
+'Control is clarity. Clarity is confidence.” — repository_audit'
 
 © 2025 Raymon Epping
 
-🧠 Powered by `radar_love.sh` — 📚 Related Articles
+🧠 Powered by repository_audit.sh — 📚 Related Articles
 
-- 📖 [Part I – From Dream to Demo](https://medium.com/continuous-insights/from-dream-to-demo-building-an-automated-secret-scanning-pipeline-064a64971f64)  
-- 🛠️ [Part II – From Vision to Version](https://medium.com/@raymonepping/from-vision-to-version-evolving-radar-love-with-flags-validation-and-ci-swagger-83610d549412)  
-- 📦 Part III – Packaging `radar_love_cli` (TBD)
+📖 [Part From Git Repo Chaos to Clean Insights](https://medium.com/continuous-insights/from-git-repo-chaos-to-clean-insights-repository-audit-aa4c8696794e)  
