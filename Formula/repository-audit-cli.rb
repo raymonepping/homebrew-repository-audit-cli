@@ -1,10 +1,10 @@
 class RepositoryAuditCli < Formula
   desc "CLI toolkit for auditing Git repositories and folders with markdown/csv/json reports"
   homepage "https://github.com/raymonepping/repository_audit_cli"
-  url "https://github.com/raymonepping/homebrew-repository-audit-cli/archive/refs/tags/v1.0.15.tar.gz"
-  sha256 "5eca0fc52112409e953fe4912ad66ebba582fd6838e33e02cff0ac018ce3ddac"
+  url "https://github.com/raymonepping/homebrew-repository-audit-cli/archive/refs/tags/v1.0.16.tar.gz"
+  sha256 "cfadb5248347c7309a54c22a0f1cc24c645fd39d67f7961a917b00c7012ca68a"
   license "MIT"
-  version "1.0.15"
+  version "1.0.16"
 
   depends_on "bash"
 
