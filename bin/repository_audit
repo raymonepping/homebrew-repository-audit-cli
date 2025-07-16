@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # shellcheck disable=SC2034
-VERSION="1.0.7"
+VERSION="1.0.8"
 SCRIPT_NAME="repository_audit"
 
 # --- Try env override first, then Homebrew, then local dev path ---
@@ -24,8 +24,8 @@ if [[ -z "${BASE_DIR:-}" ]]; then
   BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 
-LIB_DIR="$BASE_DIR/lib"
-TPL_DIR="$BASE_DIR/tpl"
+LIB_DIR="${LIB_DIR:-$BASE_DIR/lib}"
+TPL_DIR="${TPL_DIR:-$(cd "$LIB_DIR/.." && pwd)/tpl"}"
 
 # --- Load shared functions ---
 if [[ ! -f "$LIB_DIR/audit_utils.sh" ]]; then
