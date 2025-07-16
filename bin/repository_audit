@@ -160,8 +160,25 @@ if [[ -z "$PARENT" && -z "$CHILD" ]]; then
   exit 1
 fi
 
+# --- Normalize CHILD and OUTDIR to absolute paths (avoids cd/write conflicts) ---
+if [[ -n "$CHILD" ]]; then
+  CHILD="$(cd "$(dirname "$CHILD")" && pwd)/$(basename "$CHILD")"
+fi
+
+if [[ -n "$OUTDIR" ]]; then
+  OUTDIR="$(cd "$OUTDIR" 2>/dev/null && pwd)" || {
+    echo "❌ Failed to resolve --outdir path: $OUTDIR"
+    exit 1
+  }
+fi
+
+# Optional: Warn if they're the same
+# if [[ -n "$CHILD" && "$CHILD" == "$OUTDIR" ]]; then
+#   echo "⚠️  Warning: --child and --outdir point to the same directory. This may cause issues when auditing and writing output."
+# fi
+
+
 # Normalize and validate format, set extension and template
-# Normalize and validate format, set extension
 case "${FORMAT,,}" in
 markdown | md | default | "")
   FORMAT="markdown"
@@ -185,10 +202,12 @@ esac
 if [[ -n "${AUDIT_TEMPLATE:-}" ]]; then
   if [[ -d "$AUDIT_TEMPLATE" ]]; then
     # Use folder and infer based on format
-    TPL_DIR="$AUDIT_TEMPLATE"
+    TPL_DIR="$(cd "$AUDIT_TEMPLATE" && pwd)"
     TEMPLATE="$TPL_DIR/audit_report_${FORMAT}.tpl"
   elif [[ -f "$AUDIT_TEMPLATE" ]]; then
-    TEMPLATE="$AUDIT_TEMPLATE"
+    # Full path to a specific template
+    TEMPLATE="$(cd "$(dirname "$AUDIT_TEMPLATE")" && pwd)/$(basename "$AUDIT_TEMPLATE")"
+    TPL_DIR="$(dirname "$TEMPLATE")"
   else
     echo "❌ Invalid --audit-tpl path: $AUDIT_TEMPLATE"
     exit 1
@@ -202,8 +221,16 @@ HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
 FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+REPORT="${OUTDIR%/}/repos_report_${TIMESTAMP}.${EXT}"
+
 mkdir -p "$OUTDIR"
-REPORT="$OUTDIR/repos_report_${TIMESTAMP}.${EXT}"
+if [[ ! -d "$OUTDIR" ]]; then
+  echo "❌ Failed to create or access output directory: '$OUTDIR'"
+  exit 1
+fi
+
+REPORT="${OUTDIR%/}/repos_report_${TIMESTAMP}.${EXT}"
+echo "📄 Output will be written to: $REPORT"
 
 # Run audit
 if [[ -n "$PARENT" ]]; then

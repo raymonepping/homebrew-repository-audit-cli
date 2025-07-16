@@ -72,7 +72,14 @@ generate_badges_block() {
 EOF
 }
 
+# declare -p audit_entries
+
 generate_summary_counts_block() {
+  local var="$1"
+  if ! declare -p "$var" 2>/dev/null | grep -q 'declare \-a'; then
+    echo "**Error:** '$var' is not an array. Skipping summary counts." >&2
+    return 1
+  fi
   local -n entries_ref="$1"
   local total="${#entries_ref[@]}"
   local issues=0 dirty=0 notag=0
@@ -86,7 +93,6 @@ generate_summary_counts_block() {
   printf "**Total Repos:** %d | **With Issues:** %d | **Dirty Trees:** %d | **No Tags:** %d\n" \
     "$total" "$issues" "$dirty" "$notag"
 }
-
 
 render_template() {
   local report_file="$1"
@@ -107,7 +113,7 @@ render_template() {
     exit 1
   fi
 
-  # Replace all placeholders
+  # Replace placeholders
   template="${template//\{\{ entries \}\}/$entries_block}"
   template="${template//\{\{ summary \}\}/$summary_block}"
   template="${template//\{\{ summary_counts \}\}/$summary_counts_block}"
@@ -116,8 +122,18 @@ render_template() {
   template="${template//\{\{ footer \}\}/$footer_block}"
   template="${template//@@BADGES@@/$badges_block}"
 
-  printf "%s\n" "$template" >"$report_file"
+  # Resolve absolute path safely
+  local abs_report_file
+  abs_report_file="$(cd "$(dirname "$report_file")" && pwd)/$(basename "$report_file")"
+
+  mkdir -p "$(dirname "$abs_report_file")" || {
+    echo "❌ Could not create directory for: $abs_report_file"
+    exit 1
+  }
+
+  printf "%s\n" "$template" >"$abs_report_file"
 }
+
 
 render_csv() {
   local report_file="$1"
@@ -255,6 +271,38 @@ check_tracked_files() {
   git ls-files | grep -i -q '^LICENSE' && tracked_license="✅"
   echo "$tracked_readme|$tracked_license"
 }
+
+generate_summary_counts_single_row() {
+  local row="$1"
+  local total=1
+  local issues=0 dirty=0 notag=0
+
+  [[ "$row" == *"❌"* ]] && ((issues++))
+  [[ "$row" == *"yes"* && "$row" == *"Dirty"* ]] && ((dirty++))
+  [[ "$row" == *"| - |"* ]] && ((notag++))
+
+  printf "**Total Repos:** %d | **With Issues:** %d | **Dirty Trees:** %d | **No Tags:** %d\n" \
+    "$total" "$issues" "$dirty" "$notag"
+}
+
+generate_summary_counts_block_single() {
+  local entry="$1"
+
+  # Split row into fields
+  local IFS="|"
+  read -r _ name tag tag_count status _ _ readme license tracked_readme tracked_license commits branches last_commit uncommitted dirty _ <<< "$entry"
+
+  cat <<EOF
+| Metric             | Value |
+|--------------------|-------|
+| Total Repos        | 1     |
+| Missing README     | $([[ $readme == "❌" ]] && echo 1 || echo 0) |
+| Missing LICENSE    | $([[ $license == "❌" ]] && echo 1 || echo 0) |
+| Uncommitted Files  | $([[ $uncommitted == "yes" ]] && echo 1 || echo 0) |
+| Dirty Repos        | $([[ $dirty == "yes" ]] && echo 1 || echo 0) |
+EOF
+}
+
 
 audit_parent() {
   # local parent="$1" report="$2" format="$3" dryrun="$4" header_template="$5" footer_template="$6"
@@ -397,13 +445,10 @@ audit_child() {
   fi
 
   if [[ "$format" == "markdown" ]]; then
-    local badges_block
+    local badges_block summary_counts_block header_block footer_block
+
     badges_block="$(generate_badges_block "$format" 1 "$VERSION")"
-
-    local summary_counts_block
-    summary_counts_block="$(generate_summary_counts_block row)"
-
-    local header_block footer_block
+    summary_counts_block="$(generate_summary_counts_single_row "$row")"
     header_block="$(<"$header_template")"
     footer_block="$(<"$footer_template")"
 
@@ -418,8 +463,9 @@ audit_child() {
       "$header_block" \
       "$footer_block"
   else
-    render_report "$format" "$report" row missing_row "$template" ""
+    render_report "$format" "$report" "$row" "$missing_row" "$template" ""
   fi
 
   popd >/dev/null || return
 }
+
