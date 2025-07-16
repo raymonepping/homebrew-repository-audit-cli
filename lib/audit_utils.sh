@@ -203,7 +203,7 @@ render_report() {
   local report_file="$2"
   local -n entries="$3"
   local -n summary="$4"
-  local template_file="$5"
+  local template="$5"
   local badges_block="${6:-}"
 
   case "$format" in
@@ -257,7 +257,14 @@ check_tracked_files() {
 }
 
 audit_parent() {
-  local parent="$1" report="$2" format="$3" dryrun="$4" header_template="$5" footer_template="$6"
+  # local parent="$1" report="$2" format="$3" dryrun="$4" header_template="$5" footer_template="$6"
+  local parent="$1"
+  local report="$2"
+  local format="$3"
+  local dryrun="$4"
+  local template="$5"
+  local header_template="$6"
+  local footer_template="$7"
 
   echo "$EMOJI_SAVE Auditing repositories under: $parent"
   parent="${parent%/}"
@@ -346,7 +353,7 @@ audit_parent() {
       "$(printf "%s\n" "${audit_entries[@]}")" \
       "$(printf "%s\n" "${missing_entries[@]}")" \
       "$badges_block" \
-      "$template_file" \
+      "$template" \
       "$missing_git_block" \
       "$summary_counts_block" \
       "$header_block" \
@@ -358,67 +365,61 @@ audit_parent() {
 }
 
 audit_child() {
-  local child="$1" report="$2" format="$3" dryrun="$4" header_template="$5" footer_template="$6"
+  local child="$1"
+  local report="$2"
+  local format="$3"
+  local dryrun="$4"
+  local template="$5"
+  local header_template="$6"
+  local footer_template="$7"
 
-  # Validate that the child is a git repo
-  if ! git -C "$child" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo "❌ Not a git repository: $child"
-    return 1
+  echo "$EMOJI_SAVE Auditing single repository: $child"
+
+  if [[ ! -d "$child/.git" ]]; then
+    echo "❌ Not a valid git repo: $child"
+    return
   fi
+
+  pushd "$child" >/dev/null || return
 
   local name url author tag tag_count status readme license tracked_readme tracked_license
   local commit_count last_commit branch_count has_uncommitted dirty
-  local -a child_entries=()
-  local -a child_missing=()
 
-  # Collect metadata using git -C to avoid pushd/popd
   name="$(basename "$child")"
-  url="$(git -C "$child" config --get remote.origin.url || echo '-')"
-  author="$(git -C "$child" log -1 --pretty=format:'%an <%ae>' || echo '-')"
-  tag="$(git -C "$child" describe --tags --abbrev=0 2>/dev/null || echo '-')"
-  tag_count="$(git -C "$child" tag | wc -l | tr -d ' ')"
-  status="$(git -C "$child" status --porcelain | wc -l | tr -d ' ')"
-  has_uncommitted=$([[ "$status" -gt 0 ]] && echo "yes" || echo "no")
-  dirty=$([[ "$status" -gt 0 ]] && echo "yes" || echo "no")
-  readme=$(ls -1 "$child"/README* 2>/dev/null | grep -iq '^README' && echo '✅' || echo '❌')
-  license=$(ls -1 "$child"/LICENSE* 2>/dev/null | grep -iq '^LICENSE' && echo '✅' || echo '❌')
-  commit_count="$(git -C "$child" rev-list --count HEAD 2>/dev/null || echo '0')"
-  last_commit="$(git -C "$child" log -1 --pretty=format:'%cd' --date=iso 2>/dev/null || echo '-')"
-  branch_count="$(git -C "$child" branch --list | wc -l | tr -d ' ')"
+  collect_git_metadata
 
-  # Git-tracked files (reuse function if possible, or inline)
-  local tracked_readme="❌" tracked_license="❌"
-  git -C "$child" ls-files | grep -i -q '^README' && tracked_readme="✅"
-  git -C "$child" ls-files | grep -i -q '^LICENSE' && tracked_license="✅"
+  local row
+  row="$(render_row "$name" "$tag" "$tag_count" "$status" "$url" "$author" "$readme" "$license" "$tracked_readme" "$tracked_license" "$commit_count" "$branch_count" "$last_commit" "$has_uncommitted" "$dirty")"
 
-  child_entries+=("$(render_row "$name" "$tag" "$tag_count" "$status" "$url" "$author" "$readme" "$license" "$tracked_readme" "$tracked_license" "$commit_count" "$branch_count" "$last_commit" "$has_uncommitted" "$dirty")")
-
+  local missing_row=""
   if [[ "$readme" == "❌" || "$license" == "❌" ]]; then
-    child_missing+=("$(render_missing_row "$name" "$([[ "$readme" == "❌" ]] && echo '❌')" "$([[ "$license" == "❌" ]] && echo '❌')")")
+    missing_row="$(render_missing_row "$name" "$([[ $readme == "❌" ]] && echo '❌')" "$([[ $license == "❌" ]] && echo '❌')")"
   fi
 
-  # Blocks for rendering (same as parent)
-  local badges_block summary_counts_block
-  badges_block="$(generate_badges_block "$format" "${#child_entries[@]}" "$VERSION")"
-  summary_counts_block="$(generate_summary_counts_block child_entries)"
-
-  local header_block footer_block
-  header_block="$(<"$header_template")"
-  footer_block="$(<"$footer_template")"
-
-  # Consistently write to the correct $report, as with parent
   if [[ "$format" == "markdown" ]]; then
+    local badges_block
+    badges_block="$(generate_badges_block "$format" 1 "$VERSION")"
+
+    local summary_counts_block
+    summary_counts_block="$(generate_summary_counts_block row)"
+
+    local header_block footer_block
+    header_block="$(<"$header_template")"
+    footer_block="$(<"$footer_template")"
+
     render_template \
       "$report" \
-      "$(printf "%s\n" "${child_entries[@]}")" \
-      "$(printf "%s\n" "${child_missing[@]}")" \
+      "$row" \
+      "$missing_row" \
       "$badges_block" \
-      "$template_file" \
+      "$template" \
       "" \
       "$summary_counts_block" \
       "$header_block" \
       "$footer_block"
   else
-    render_report "$format" "$report" child_entries child_missing "$template_file" ""
+    render_report "$format" "$report" row missing_row "$template" ""
   fi
+
+  popd >/dev/null || return
 }

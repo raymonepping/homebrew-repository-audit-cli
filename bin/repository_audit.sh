@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # shellcheck disable=SC2034
-VERSION="1.0.12"
+VERSION="1.0.14"
 SCRIPT_NAME="repository_audit"
 
 # --- Try env override first, then Homebrew, then local dev path ---
@@ -161,26 +161,19 @@ if [[ -z "$PARENT" && -z "$CHILD" ]]; then
 fi
 
 # Normalize and validate format, set extension and template
+# Normalize and validate format, set extension
 case "${FORMAT,,}" in
 markdown | md | default | "")
   FORMAT="markdown"
   EXT="md"
-  if [[ -n "${AUDIT_TEMPLATE:-}" ]]; then
-    TEMPLATE="$AUDIT_TEMPLATE"
-  else
-    TEMPLATE="$TPL_DIR/audit_report_markdown.tpl"
-  fi
   ;;
 csv)
   FORMAT="csv"
   EXT="csv"
-  TEMPLATE="$TPL_DIR/audit_report_csv.tpl"
   ;;
 json)
   FORMAT="json"
   EXT="json"
-  # shellcheck disable=SC2034
-  TEMPLATE="$TPL_DIR/audit_report_json.tpl"
   ;;
 *)
   echo "❌ Unknown format: $FORMAT"
@@ -188,6 +181,23 @@ json)
   ;;
 esac
 
+# Resolve main template
+if [[ -n "${AUDIT_TEMPLATE:-}" ]]; then
+  if [[ -d "$AUDIT_TEMPLATE" ]]; then
+    # Use folder and infer based on format
+    TPL_DIR="$AUDIT_TEMPLATE"
+    TEMPLATE="$TPL_DIR/audit_report_${FORMAT}.tpl"
+  elif [[ -f "$AUDIT_TEMPLATE" ]]; then
+    TEMPLATE="$AUDIT_TEMPLATE"
+  else
+    echo "❌ Invalid --audit-tpl path: $AUDIT_TEMPLATE"
+    exit 1
+  fi
+else
+  TEMPLATE="$TPL_DIR/audit_report_${FORMAT}.tpl"
+fi
+
+# These are format-independent, always from TPL_DIR
 HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
 FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"
 
@@ -197,9 +207,11 @@ REPORT="$OUTDIR/repos_report_${TIMESTAMP}.${EXT}"
 
 # Run audit
 if [[ -n "$PARENT" ]]; then
-  audit_parent "$PARENT" "$REPORT" "$FORMAT" "$DRYRUN" "$HEADER_TEMPLATE" "$FOOTER_TEMPLATE"
+  audit_parent "$PARENT" "$REPORT" "$FORMAT" "$DRYRUN" "$TEMPLATE" "$HEADER_TEMPLATE" "$FOOTER_TEMPLATE"
+# audit_parent "$PARENT" "$REPORT" "$FORMAT" "$DRYRUN" "$HEADER_TEMPLATE" "$FOOTER_TEMPLATE"
 elif [[ -n "$CHILD" ]]; then
-  audit_child "$CHILD" "$REPORT" "$FORMAT" "$DRYRUN" "$HEADER_TEMPLATE" "$FOOTER_TEMPLATE"
+  audit_child "$CHILD" "$REPORT" "$FORMAT" "$DRYRUN" "$TEMPLATE" "$HEADER_TEMPLATE" "$FOOTER_TEMPLATE"
+# audit_child "$CHILD" "$REPORT" "$FORMAT" "$DRYRUN" "$HEADER_TEMPLATE" "$FOOTER_TEMPLATE"
 fi
 
 if [[ "$SUMMARY" == true && "$FORMAT" == "markdown" ]]; then
