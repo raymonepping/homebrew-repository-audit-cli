@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # shellcheck disable=SC2034
-VERSION="1.0.8"
+VERSION="1.0.9"
 SCRIPT_NAME="repository_audit"
 
 # --- Try env override first, then Homebrew, then local dev path ---
@@ -25,26 +25,29 @@ if [[ -z "${BASE_DIR:-}" ]]; then
 fi
 
 LIB_DIR="${LIB_DIR:-$BASE_DIR/lib}"
-TPL_DIR="${TPL_DIR:-$(cd "$LIB_DIR/.." && pwd)/tpl"}"
+TPL_DIR="${TPL_DIR:-$(cd "$LIB_DIR/.." && pwd)}/tpl"
 
 # --- Load shared functions ---
 if [[ ! -f "$LIB_DIR/audit_utils.sh" ]]; then
   echo "❌ Could not locate audit_utils.sh! (looked in $LIB_DIR)"
   exit 1
 fi
+
+# shellcheck source=./lib/audit_utils.sh
 source "$LIB_DIR/audit_utils.sh"
 
 # Default values
 PARENT=""
 CHILD=""
 OUTDIR="$(pwd)"
+AUDIT_TEMPLATE=""
 FORMAT="markdown"
 DRYRUN=false
 HELP=false
 SUMMARY=false
 
 # --- ACTION FLAGS: used to detect if we should run in interactive/wizard mode ---
-ACTION_FLAGS=( --parent --child --outdir --format --dryrun --summary )
+ACTION_FLAGS=(--parent --child --outdir --format --dryrun --summary)
 HAS_ACTION_FLAG="false"
 for arg in "$@"; do
   for flag in "${ACTION_FLAGS[@]}"; do
@@ -68,8 +71,10 @@ fi
 
 # If NO action flags (and not asking for --help/--version), run the decision tree
 if [[ "$HAS_ACTION_FLAG" == "false" && "$HELP" == "false" && "$#" -eq 0 ]]; then
-  # shellcheck source=lib/decision_tree.sh
+
+  # shellcheck source=./lib/decision_tree.sh
   source "$LIB_DIR/decision_tree.sh"
+
   run_decision_tree
   exit 0
 fi
@@ -77,15 +82,46 @@ fi
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --parent)  PARENT="$2"; shift 2 ;;
-    --child)   CHILD="$2"; shift 2 ;;
-    --outdir)  OUTDIR="$2"; shift 2 ;;
-    --format)  FORMAT="$2"; shift 2 ;;
-    --dryrun)  DRYRUN=true; shift ;;
-    --summary) SUMMARY=true; shift ;;
-    --version) echo "$SCRIPT_NAME v$VERSION"; exit 0 ;;
-    --help)    HELP=true; shift ;;
-    *) echo "❌ Unknown option: $1"; exit 1 ;;
+  --parent)
+    PARENT="$2"
+    shift 2
+    ;;
+  --child)
+    CHILD="$2"
+    shift 2
+    ;;
+  --outdir)
+    OUTDIR="$2"
+    shift 2
+    ;;
+  --audit-tpl)
+    AUDIT_TEMPLATE="$2"
+    shift 2
+    ;;
+  --format)
+    FORMAT="$2"
+    shift 2
+    ;;
+  --dryrun)
+    DRYRUN=true
+    shift
+    ;;
+  --summary)
+    SUMMARY=true
+    shift
+    ;;
+  --version)
+    echo "$SCRIPT_NAME v$VERSION"
+    exit 0
+    ;;
+  --help)
+    HELP=true
+    shift
+    ;;
+  *)
+    echo "❌ Unknown option: $1"
+    exit 1
+    ;;
   esac
 done
 
@@ -114,38 +150,44 @@ EOF
 fi
 
 if [[ -n "$PARENT" && -n "$CHILD" ]]; then
-  echo "❌ Please provide only one of --parent or --child"; exit 1
+  echo "❌ Please provide only one of --parent or --child"
+  exit 1
 fi
 if [[ -z "$PARENT" && -z "$CHILD" ]]; then
-  echo "❌ Please provide either --parent or --child"; exit 1
+  echo "❌ Please provide either --parent or --child"
+  exit 1
 fi
 
 # Normalize and validate format, set extension and template
 case "${FORMAT,,}" in
-  markdown | md | default | "" )
-    FORMAT="markdown"
-    EXT="md"
-    TEMPLATE="$TPL_DIR/audit_report_md.tpl"
-    HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
-    FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"    
-    ;;
-  csv )
-    EXT="csv"
-    TEMPLATE="$TPL_DIR/audit_report_csv.tpl"
-    HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
-    FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"        
-    ;;
-  json )
-    EXT="json"
-    TEMPLATE="$TPL_DIR/audit_report_json.tpl"
-    HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
-    FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"
-    ;;
-  * )
-    echo "❌ Unknown format: $FORMAT"
-    exit 1
-    ;;
+markdown | md | default | "")
+  FORMAT="markdown"
+  EXT="md"
+  if [[ -n "${AUDIT_TEMPLATE:-}" ]]; then
+    TEMPLATE="$AUDIT_TEMPLATE"
+  else
+    TEMPLATE="$TPL_DIR/audit_report_markdown.tpl"
+  fi
+  ;;
+csv)
+  FORMAT="csv"
+  EXT="csv"
+  TEMPLATE="$TPL_DIR/audit_report_csv.tpl"
+  ;;
+json)
+  FORMAT="json"
+  EXT="json"
+  # shellcheck disable=SC2034
+  TEMPLATE="$TPL_DIR/audit_report_json.tpl"
+  ;;
+*)
+  echo "❌ Unknown format: $FORMAT"
+  exit 1
+  ;;
 esac
+
+HEADER_TEMPLATE="$TPL_DIR/audit_report_header.tpl"
+FOOTER_TEMPLATE="$TPL_DIR/audit_report_footer.tpl"
 
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 mkdir -p "$OUTDIR"
