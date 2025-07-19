@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # shellcheck disable=SC2034
-VERSION="1.0.7"
+VERSION="1.0.14"
 
 IFS=$'\n\t'
 
