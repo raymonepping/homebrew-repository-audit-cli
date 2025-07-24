@@ -2,7 +2,9 @@
 
 🟣 2025-07-16 10:38:11 — raymon.epping: repository_audit bumped from 1.0.7 to 1.0.8
 
-[![version](https://img.shields.io/badge/version-1.1.0-red)](https://github.com/raymonepping)
+[![version](https://img.shields.io/badge/version-1.2.1-red)](https://github.com/raymonepping)
+
+🟣 2025-07-24 11:52:24 — raymon.epping: repository_audit bumped from 1.2.0 to 1.2.1
 
 🔵 2025-07-20 09:43:45 — raymon.epping: repository_audit bumped from 1.0.14 to 1.1.0
 
